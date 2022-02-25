@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.training</groupId>
 	<artifactId>sample-springboot-app</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>war</packaging>
 	<name>sample-springboot-app</name>
 	<description>Simple WebApp</description>
