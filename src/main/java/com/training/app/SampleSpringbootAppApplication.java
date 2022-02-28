@@ -3,7 +3,7 @@ package com.training.app;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 /*
-  @author: Amit Fegade (amitf@gmail.com)
+  @author: Amit Fegade (amit@gmail.com)
 */
 
 @SpringBootApplication
