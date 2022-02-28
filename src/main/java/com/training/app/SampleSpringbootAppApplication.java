@@ -2,6 +2,9 @@ package com.training.app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+/*
+  @author: Amit Fegade
+*/
 
 @SpringBootApplication
 public class SampleSpringbootAppApplication {
