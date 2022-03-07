@@ -47,7 +47,7 @@ pipeline {
                      }
                  } 
                  stage("Perform code analysis") {
-                     stpes {
+                     steps {
                          echo "Performing code analysis using SonarQube"
                      }
                  }
