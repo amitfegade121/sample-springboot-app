@@ -60,7 +60,7 @@ pipeline {
                               sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=$PROJECT_NAME  \
                                     -Dsonar.organization=$ORGANIZATION \
                                     -Dsonar.sources=src \
-                                    sonar.java.binaries=target'''
+                                    -Dsonar.java.binaries=target'''
                          }
                      }
                  }
