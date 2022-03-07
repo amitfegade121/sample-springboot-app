@@ -47,8 +47,21 @@ pipeline {
                      }
                  } 
                  stage("Perform code analysis") {
+
+                     environment {
+                         SCANNER_HOME = tool "/home/jenkins/sonar"
+                         ORGANIZATION = "amitf-organization"
+                         PROJECT_NAME = "sample-springboot-app"
+                     }
+
                      steps {
                          echo "Performing code analysis using SonarQube"
+                         withSonarQubeEnv(installationName: "SONARQUBE_SERVER", credentialsId: 'SONARQUBE_SERVER_CRED') {
+                              sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=$PROJECT_NAME  \
+                                    -Dsonar.organization=$ORGANIZATION \
+                                    -Dsonar.sources=src \
+                                    sonar.java.binaries=target'''
+                         }
                      }
                  }
             }
