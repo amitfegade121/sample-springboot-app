@@ -49,7 +49,7 @@ pipeline {
                  stage("Perform code analysis") {
 
                      environment {
-                         SCANNER_HOME = tool "/home/jenkins/sonar"
+                         SCANNER_HOME = tool "SONARQUBE_SCANNER"
                          ORGANIZATION = "amitf-organization"
                          PROJECT_NAME = "sample-springboot-app"
                      }
