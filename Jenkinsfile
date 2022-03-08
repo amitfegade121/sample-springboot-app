@@ -8,6 +8,12 @@ pipeline {
         maven "MAVEN"
     }
 
+    environment {
+        REGISTRY = "amitfegade121/sample-springboot-app"
+        REGISTRY_CREDETIALS = "DockerHub_Cred"
+        dockerImage = ""
+    }
+
     stages {
 
         stage("Build and package an application") {
@@ -27,25 +33,59 @@ pipeline {
             }
         }
 
+        stage("Build a docker image") {
+             steps {
+                 script {
+                     dockerImage = docker.build REGISTRY + ":$BUILD_NUMBER"
+                 }
+             }
+        }
+
+        stage("Push docker image") {
+            steps {
+                script {
+                    docker.withRegistry("", REGISTRY_CREDETIALS) {
+                         dockerImage.push()
+                         dockerImage.push("latest")
+                    }
+                }                
+            }
+        }
+
+        stage("Remove unused images") {
+            steps {
+                sh '''docker rmi $REGISTRY:$BUILD_NUMBER
+                      docker rmi $REGISTRY:latest'''
+            }
+        }
+
         stage("Deploy to staging and perform code analaysis") {
 
             parallel {
                  stage("Deploy to staging") {
-                     steps {
-                         echo "Copying an artifact"
-                         copyArtifacts filter: '**/*.war', fingerprintArtifacts: true, projectName: 'spring-boot-app-package', selector: lastSuccessful()
-                         echo "Deploying an application to staging tomcat server"
-                         deploy adapters: [tomcat8(credentialsId: 'tomcat-staging-cred', path: '', url: 'http://3.15.154.255:8080')], contextPath: null, war: '**/*.war'
-                     }
-                     post {
-                         success {
-                             echo "An application is successfully deployed to staging environment."
-                         }
-                         failure {
-                             echo "Failed to deploy an application on staging environment."
-                         }
-                     }
+                      steps {
+                          script {
+                              def remote = [:]
+                              remote.name = 'staging-vm'
+                              remote.host = '172.31.18.71'                              
+                              remote.allowAnyHosts = true
+                              withCredentials([usernamePassword(credentialsId: 'Staging_VM_Cred', passwordVariable: 'password', usernameVariable: 'username')]) {
+                                     remote.user =  username
+                                     remote.password = password  
+                                     sshCommand remote: remote, command: "docker container run -d -p 8080:8080 amitfegade121/sample-springboot-app"
+                              }
+                          }
+                      } 
+                      post {
+                          success {
+                              echo "An application is successfully deployed to staging."
+                          }
+                          failure {
+                              echo "Failed to deploy an application on staging env"
+                          }
+                      }                    
                  } 
+                 
                  stage("Perform code analysis") {
 
                      environment {
@@ -69,15 +109,18 @@ pipeline {
 
         stage("Deploy to production") {
             steps {
-                timeout(time: 1, unit: 'DAYS') {
-                     input 'Do you want to deploy an application to production environment?'
+                    script {
+                       def remote = [:]
+                       remote.name = 'prod-vm'
+                       remote.host = '172.31.21.76'                              
+                       remote.allowAnyHosts = true
+                       withCredentials([usernamePassword(credentialsId: 'Prod_VM_Cred', passwordVariable: 'password', usernameVariable: 'username')]) {
+                            remote.user =  username
+                            remote.password = password  
+                           sshCommand remote: remote, command: "docker container run -d -p 8080:8080 amitfegade121/sample-springboot-app"
+                    }
                 }
-
-                 echo "Copying an artifacat"
-                 copyArtifacts filter: '**/*.war', fingerprintArtifacts: true, projectName: 'spring-boot-app-package', selector: lastSuccessful()
-                 echo "Deploying an application to production tomcat server"
-                 deploy adapters: [tomcat8(credentialsId: 'prod-vm-cred', path: '', url: 'http://18.222.71.152:8080/')], contextPath: null, war: '**/*.war'
-            }
+            } 
             post {
                 success {
                     echo "An application is successfully deployed to prod."
